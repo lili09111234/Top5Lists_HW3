@@ -20,7 +20,9 @@ export const GlobalStoreActionType = {
     SET_CURRENT_LIST: "SET_CURRENT_LIST",
     SET_LIST_NAME_EDIT_ACTIVE: "SET_LIST_NAME_EDIT_ACTIVE",
     CREATING_NEW_LIST: "CREATING_NEW_LIST",
-    SET_ITEM_NAME_EDIT_ACTIVE: "SET_ITEM_NAME_EDIT_ACTIVE"
+    SET_ITEM_NAME_EDIT_ACTIVE: "SET_ITEM_NAME_EDIT_ACTIVE",
+    SET_LIST_MARKED_FOR_DELETION: "SET_LIST_MARKED_FOR_DELETION",
+    HIDE_DELETE_LIST_MODAL: "HIDE_DELETE_LIST_MODAL"
 }
 
 // WE'LL NEED THIS TO PROCESS TRANSACTIONS
@@ -93,6 +95,28 @@ export const useGlobalStore = () => {
                 return setStore({
                     idNamePairs: store.idNamePairs,
                     currentList: payload,
+                    newListCounter: store.newListCounter,
+                    isListNameEditActive: false,
+                    isItemEditActive: false,
+                    listMarkedForDeletion: null
+                });
+            }
+
+            case GlobalStoreActionType.SET_LIST_MARKED_FOR_DELETION: {
+                return setStore({
+                    idNamePairs: store.idNamePairs,
+                    currentList: store.currentList,
+                    newListCounter: store.newListCounter,
+                    isListNameEditActive: false,
+                    isItemEditActive: false,
+                    listMarkedForDeletion: store.listMarkedForDeletion
+                });
+            }
+
+            case GlobalStoreActionType.HIDE_DELETE_LIST_MODAL: {
+                return setStore({
+                    idNamePairs: store.idNamePairs,
+                    currentList: store.currentList,
                     newListCounter: store.newListCounter,
                     isListNameEditActive: false,
                     isItemEditActive: false,
@@ -240,6 +264,50 @@ export const useGlobalStore = () => {
         asyncSetCurrentList(id);
     }
 
+    store.setlistMarkedForDeletion = function (_id){
+        
+        store.listMarkedForDeletion=_id;
+        async function asyncSetCurrentList(id) {
+            let response = await api.getTop5ListById(id);
+            if (response.data.success) {
+                let top5List = response.data.top5List;
+
+                response = await api.updateTop5ListById(top5List._id, top5List);
+                
+                if (response.data.success) {
+                    store.currentList=top5List;
+                    storeReducer({
+                        type: GlobalStoreActionType.SET_LIST_MARKED_FOR_DELETION,
+                    });
+                }
+            }
+        }
+        asyncSetCurrentList(_id);
+        
+    }
+
+
+    store.deleteMarkedList = function(){
+        async function asyncdeletmarkelist(){
+            let response = api.deleteTop5ListById(store.listMarkedForDeletion);
+            setTimeout(() => {console.log("WAIT")}, 1000);
+            if((await response).data.success){
+                storeReducer({
+                    type: GlobalStoreActionType.HIDE_DELETE_LIST_MODAL,
+                });
+                store.loadIdNamePairs();
+            }
+        }
+        asyncdeletmarkelist()
+    }
+
+    store.hideDeleteListModal = function (){
+        storeReducer({
+            type: GlobalStoreActionType.HIDE_DELETE_LIST_MODAL,
+        });
+    }
+
+
     store.addEditItemTransaction = function (id,oldtext,newtext) {
         let transaction = new EditItem_Transaction(store, id, oldtext,newtext);
         tps.addTransaction(transaction);
@@ -296,13 +364,12 @@ export const useGlobalStore = () => {
     }
 
     // THIS FUNCTION ENABLES THE PROCESS OF EDITING A LIST NAME
-  //  store.setIsListNameEditActive = function () {
-  //      storeReducer({
-  //          type: GlobalStoreActionType.SET_LIST_NAME_EDIT_ACTIVE,
-  //          payload: null
-  //      });
-  //     store.history.push("/top5list/" + store.currentList._id);
-  //  }
+    store.setIsListNameEditActive = function () {
+        storeReducer({
+            type: GlobalStoreActionType.SET_LIST_NAME_EDIT_ACTIVE,
+            payload: null
+        });
+    }
 
     store.setIsItemNameEditActive = function (){
         storeReducer({

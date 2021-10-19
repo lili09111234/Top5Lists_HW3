@@ -17,13 +17,28 @@ function ListCard(props) {
 
     function handleLoadList(event) {
         if (!event.target.disabled) {
+            event.stopPropagation();
             let _id = event.target.id;
             if (_id.indexOf('list-card-text-') >= 0)
                 _id = ("" + _id).substring("list-card-text-".length);
 
             // CHANGE THE CURRENT LIST
+            
             store.setCurrentList(_id);
+            
         }
+    }
+
+    function handledelet(event){
+        event.stopPropagation();
+            
+            let _id = event.target.id;
+            
+            _id = ("" + _id).substring("delete-list-".length);
+
+            // CHANGE THE CURRENT LIST
+            
+            store.setlistMarkedForDeletion(_id);
     }
 
     function handleToggleEdit(event) {
@@ -42,7 +57,7 @@ function ListCard(props) {
     function handleKeyPress(event) {
         if (event.code === "Enter") {
             let id = event.target.id.substring("list-".length);
-            store.editItem(id, text);
+            store.changeListName(id, text);
             toggleEdit();
         }
     }
@@ -76,6 +91,7 @@ function ListCard(props) {
                 type="button"
                 id={"delete-list-" + idNamePair._id}
                 className="list-card-button"
+                onClick={handledelet}
                 value={"\u2715"}
             />
             <input

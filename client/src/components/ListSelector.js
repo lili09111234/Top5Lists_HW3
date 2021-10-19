@@ -44,7 +44,8 @@ const ListSelector = () => {
                 {
                     listCard
                 }
-                <DeleteModal />
+                <DeleteModal 
+                />
             </div>
         </div>)
 }
