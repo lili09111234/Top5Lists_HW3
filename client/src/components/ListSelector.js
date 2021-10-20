@@ -29,6 +29,7 @@ const ListSelector = () => {
             />
         ))
     }
+    
     return (
         <div id="top5-list-selector">
             <div id="list-selector-heading">

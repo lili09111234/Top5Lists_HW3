@@ -10,21 +10,53 @@ import { useHistory } from 'react-router-dom'
 function EditToolbar() {
     const { store } = useContext(GlobalStoreContext);
     const history = useHistory();
-
     let enabledButtonClass = "top5-button";
+    let redoButtonClass="top5-button";
+    let undoButtonClass="top5-button"
+    if(store.listMarkedForDeletion!=null){
+        enabledButtonClass="top5-button-disabled";
+    }
+    if(store.currentList==null){
+        enabledButtonClass="top5-button-disabled";
+        redoButtonClass="top5-button-disabled";
+        undoButtonClass="top5-button-disabled";
+    }
     function handleUndo() {
-        store.undo();
+        console.log(!store.itemActive,store.hastransactiontoundo)
+        if(!store.itemActive){
+            if(store.hastransactiontoundo){
+            store.undo();
+            }
+        }
     }
     function handleRedo() {
-        store.redo();
+        console.log(!store.itemActive,store.hastransactiontoredo)
+        if(!store.itemActive){
+            if(store.hastransactiontoredo){
+            store.redo();
+            }
+        }
     }
     function handleClose() {
-        history.push("/");
-        store.closeCurrentList();
+        console.log(!store.itemActive,store.hastransactiontoredo)
+        if(!store.itemActive){
+                history.push("/");
+                store.closeCurrentList();
+        }
     }
     let editStatus = false;
-    if (store.isListNameEditActive) {
+    if (store.itemActive) {
         editStatus = true;
+        
+        enabledButtonClass="top5-button-disabled";
+        redoButtonClass="top5-button-disabled";
+        undoButtonClass="top5-button-disabled";
+    }
+    if(!store.hastransactiontoredo){
+        redoButtonClass="top5-button-disabled";
+    }
+    if(!store.hastransactiontoundo){
+        undoButtonClass="top5-button-disabled";
     }
     return (
         <div id="edit-toolbar">
@@ -32,14 +64,14 @@ function EditToolbar() {
                 disabled={editStatus}
                 id='undo-button'
                 onClick={handleUndo}
-                className={enabledButtonClass}>
+                className={undoButtonClass}>
                 &#x21B6;
             </div>
             <div
                 disabled={editStatus}
                 id='redo-button'
                 onClick={handleRedo}
-                className={enabledButtonClass}>
+                className={redoButtonClass}>
                 &#x21B7;
             </div>
             <div
